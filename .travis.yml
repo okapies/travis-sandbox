@@ -1,0 +1,28 @@
+dist: trusty
+sudo: required
+language: cpp
+services:
+  - docker
+env:
+    global:
+        - BUILDENV_REPO: okapies/buildenv
+        - BUILDENV_TAG: linux-x64-gcc-5.5
+        - MKL_DNN_REV: v0.16
+        - MKL_DNN_INSTALL_SUFFIX: -0.16
+cache:
+    directories:
+        - $HOME/downloads
+        - $HOME/mkl-dnn${MKL_DNN_INSTALL_SUFFIX}
+before_script:
+    - |
+      echo ${HOME}
+      echo ${MKL_DNN_INSTALL_SUFFIX}
+    - docker pull ${BUILDENV_REPO}:${BUILDENV_TAG} || true
+    - docker run -d ${BUILDENV_REPO}:${BUILDENV_TAG} /bin/bash
+    - DOCKER_CONTAINER_ID=$(docker ps | grep ${BUILDENV_TAG} | awk '{print $1}')
+    - docker logs ${DOCKER_CONTAINER_ID}
+script:
+    - docker exec -it ${DOCKER_CONTAINER_ID} /bin/bash -c "echo hello"
+after_script:
+    - docker stop ${DOCKER_CONTAINER_ID}
+    - docker rm -v ${DOCKER_CONTAINER_ID}
