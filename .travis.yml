@@ -6,11 +6,13 @@ services:
 
 env:
   global:
+    - PROTOBUF_VERSION: 3.6.1
     - MKLDNN_VERSION: 0.16
 
 cache:
   directories:
     - $HOME/downloads
+    - $HOME/protobuf-${PROTOBUF_VERSION}
     - $HOME/mkl-dnn-${MKLDNN_VERSION}
 
 matrix:

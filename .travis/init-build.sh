@@ -1,7 +1,7 @@
 # check if variables have values
 test -n "${DOCKER_CONTAINER_ID}" || { echo "DOCKER_CONTAINER_ID does not exist"; exit 1; }
-test -n "${MKLDNN_VERSION}" || { echo "MKLDNN_VERSION does not exist"; exit 1; }
 test -n "${GCC_ROOT_DIR}" || { echo "GCC_ROOT_DIR does not exist"; exit 1; }
+test -n "${MKLDNN_VERSION}" || { echo "MKLDNN_VERSION does not exist"; exit 1; }
 test -n "${MKLDNN_INSTALL_DIR}" || { echo "MKLDNN_INSTALL_DIR does not exist"; exit 1; }
 
 function docker_exec() {
