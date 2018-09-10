@@ -6,18 +6,17 @@ services:
 
 env:
   global:
-    - MKL_DNN_REV: v0.16
-    - MKL_DNN_INSTALL_SUFFIX: -0.16
+    - MKLDNN_VERSION: 0.16
 
 cache:
   directories:
     - $HOME/downloads
-    - $HOME/mkl-dnn${MKL_DNN_INSTALL_SUFFIX}
+    - $HOME/mkl-dnn-${MKLDNN_VERSION}
 
 matrix:
   include:
     - os: linux
-      env: PLATFORM_ID=linux-x86_64 BUILDENV_REPO=okapies/buildenv BUILDENV_TAG=linux-x64-gcc-5.5
+      env: PLATFORM_ID=linux-x86_64 BUILDENV_REPO=okapies/buildenv BUILDENV_TAG=linux-x64-gcc-5.5 GCC_VERSION=5.5.0
 
 # skip the installation step
 install: true
@@ -36,7 +35,7 @@ script:
     echo "travis_fold:start:Run build.sh for ${PLATFORM_ID}"
     if [ -e "${PLATFORM_DIR}/build.sh" ]; then
       echo -e "\e[33;1mRunning .travis/${PLATFORM_ID}/build.sh on ${TRAVIS_REPO_SLUG}\e[0m"
-      /bin/bash -ex ${PLATFORM_DIR}/build.sh ${DOCKER_CONTAINER_ID}
+      /bin/bash -ex ${PLATFORM_DIR}/build.sh
     fi
     echo "travis_fold:end:Run build.sh for ${PLATFORM_ID}"
   - cat ${HOME}/build/result.txt
