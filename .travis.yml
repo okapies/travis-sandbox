@@ -4,29 +4,42 @@ language: cpp
 services:
   - docker
 env:
-    global:
-        - BUILDENV_REPO: okapies/buildenv
-        - BUILDENV_TAG: linux-x64-gcc-5.5
-        - MKL_DNN_REV: v0.16
-        - MKL_DNN_INSTALL_SUFFIX: -0.16
+  global:
+    - BUILDENV_REPO: okapies/buildenv
+    - BUILDENV_TAG: linux-x64-gcc-5.5
+    - MKL_DNN_REV: v0.16
+    - MKL_DNN_INSTALL_SUFFIX: -0.16
 cache:
-    directories:
-        - $HOME/downloads
-        - $HOME/mkl-dnn${MKL_DNN_INSTALL_SUFFIX}
+  directories:
+    - $HOME/downloads
+    - $HOME/mkl-dnn${MKL_DNN_INSTALL_SUFFIX}
+matrix:
+  include:
+    - os: linux
+      env: PLATFORM_ID=linux-x86_64
+
+# skip the installation step
+install: true
+
 before_script:
-    - docker pull ${BUILDENV_REPO}:${BUILDENV_TAG} || true
-    - export DOCKER_CONTAINER_ID=$(docker run --privileged -d -v $HOME:$HOME -v $TRAVIS_BUILD_DIR/../:$HOME/build -v /sys/fs/cgroup:/sys/fs/cgroup ${BUILDENV_REPO}:${BUILDENV_TAG} /sbin/init)
-    - echo $HOME
-    - ls -l $HOME
-    - echo $TRAVIS_BUILD_DIR
-    - ls -l $TRAVIS_BUILD_DIR
-    - echo $TRAVIS_BUILD_DIR/..
-    - ls -l $TRAVIS_BUILD_DIR/..
-    - docker logs ${DOCKER_CONTAINER_ID}
+  - export PLATFORM_DIR=${TRAVIS_BUILD_DIR}/ci/${PLATFORM_ID}
+  - docker pull ${BUILDENV_REPO}:${BUILDENV_TAG} || true
+  - export DOCKER_CONTAINER_ID=$(docker run --privileged -d -v $HOME:$HOME -v $TRAVIS_BUILD_DIR/../:$HOME/build -v /sys/fs/cgroup:/sys/fs/cgroup ${BUILDENV_REPO}:${BUILDENV_TAG} /sbin/init)
 script:
-    - docker exec -it ${DOCKER_CONTAINER_ID} /bin/bash -c "echo hello"
-    - docker exec -it ${DOCKER_CONTAINER_ID} /bin/bash -c "ls -l ${HOME}"
-    - docker exec -it ${DOCKER_CONTAINER_ID} /bin/bash -c "ls -l ${HOME}/build"
+  - echo $HOME
+  - ls -l $HOME
+  - echo $TRAVIS_BUILD_DIR
+  - ls -l $TRAVIS_BUILD_DIR
+  - echo $TRAVIS_BUILD_DIR/..
+  - ls -l $TRAVIS_BUILD_DIR/..
+  - echo $TRAVIS_BUILD_DIR/../..
+  - ls -l $TRAVIS_BUILD_DIR/../..
+  - |
+    echo "travis_fold:start:build.sh"
+    if [ -e "${PLATFORM_DIR}/build.sh" ]; then
+      /bin/bash -ex ${PLATFORM_DIR}/build.sh ${DOCKER_CONTAINER_ID}
+    fi
+    echo "travis_fold:end:build.sh"
 after_script:
-    - docker stop ${DOCKER_CONTAINER_ID}
-    - docker rm -v ${DOCKER_CONTAINER_ID}
+  - docker stop ${DOCKER_CONTAINER_ID}
+  - docker rm -v ${DOCKER_CONTAINER_ID}
