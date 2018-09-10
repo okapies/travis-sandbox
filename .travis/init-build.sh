@@ -17,7 +17,8 @@ EOS
 )"
     docker_exec "cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/scripts && ./prepare_mkl.sh"
     docker_exec "$(cat << EOS
-cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION} && mkdir -p build && cd build && \
+cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION} && \
+([ -d "build" ] || mkdir -p build) && cd build && \
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_COMPILER=${GCC_ROOT_DIR}/bin/gcc \
@@ -29,5 +30,5 @@ cmake \
   ..
 EOS
 )"
-    docker_exec "cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/build && make -j$(nproc) && make install"
+    docker_exec "cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/build && timeout 35m make -j$(nproc) && make install/strip"
 }
