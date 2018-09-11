@@ -12,14 +12,11 @@ docker_exec "ls -l ${HOME}"
 docker_exec "ls -l ${HOME}/build"
 docker_exec "ls -l ${HOME}/build/${TRAVIS_REPO_SLUG}"
 
-docker_exec "echo hello > ${HOME}/build/result.txt"
-
 docker_exec "make --version && cmake --version && ${GCC_ROOT_DIR}/bin/g++ --version && ldd --version"
 
 # build dependencies if it doesn't exist
 [ ! -e "${MKLDNN_INSTALL_DIR}/lib/libmkldnn.so" ] && build_mkldnn
 
-ls -l ${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/build
-ls -l ${HOME}/mkl-dnn-${MKLDNN_VERSION}
+ls -l ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION}/build
 
 docker_exec "false"

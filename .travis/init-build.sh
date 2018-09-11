@@ -15,7 +15,7 @@ cd ${TRAVIS_BUILD_DIR} && \
 cd ${TRAVIS_BUILD_DIR}/build && \
 ([ -d "downloads" ] || mkdir -p downloads) && \
 cd ${TRAVIS_BUILD_DIR}/build/downloads && \
-wget https://github.com/intel/mkl-dnn/archive/v${MKLDNN_VERSION}.tar.gz && \
+([ -e "v${MKLDNN_VERSION}.tar.gz" ] || wget https://github.com/intel/mkl-dnn/archive/v${MKLDNN_VERSION}.tar.gz) && \
 tar -zxf v${MKLDNN_VERSION}.tar.gz -C ${TRAVIS_BUILD_DIR}/build
 EOS
 )"
@@ -34,5 +34,5 @@ cmake \
   ..
 EOS
 )"
-    docker_exec "cd ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION}/build && timeout 35m make -j$(nproc) && make install/strip"
+    docker_exec "cd ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION}/build && make ${MAKE_JOBS} && make install/strip"
 }

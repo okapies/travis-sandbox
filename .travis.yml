@@ -8,6 +8,7 @@ env:
   global:
     - PROTOBUF_VERSION: 3.6.1
     - MKLDNN_VERSION: 0.16
+    - MAKE_JOBS: -j2
 
 cache:
   directories:
@@ -18,11 +19,10 @@ cache:
 matrix:
   include:
     - os: linux
-      env: PLATFORM_ID=linux-x86_64 BUILDENV_IMAGE=okapies/buildenv:linux-x64-gcc-5.5 GCC_VERSION=5.5.0
+      env: PLATFORM=linux-x86_64 BUILDENV_IMAGE=okapies/buildenv:linux-x64-gcc-5.5 GCC_VERSION=5.5.0
 
 # skip the installation step
 install: true
 
 script:
   - bash -ex ${TRAVIS_BUILD_DIR}/.travis/run-build.sh
-  - cat ${HOME}/build/result.txt
