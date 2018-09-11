@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "travis_fold:start:run-build.sh for ${PLATFORM}"
+echo -e "\e[33;1mRunning .travis/${PLATFORM}/run-build.sh on ${TRAVIS_REPO_SLUG}\e[0m"
+
 # check if variables have values
 test -n "${PLATFORM}" || { echo "PLATFORM does not exist"; exit 1; }
 
@@ -25,19 +28,16 @@ if [[ "$PLATFORM" == "linux-x86" ]] || [[ "$PLATFORM" == "linux-x86_64" ]] || [[
     # Stop the container when run-build.sh exits
     trap '[[ "$DOCKER_CONTAINER_ID" ]] && docker stop ${DOCKER_CONTAINER_ID} && docker rm -v ${DOCKER_CONTAINER_ID}' 0 1 2 3 15
 
-    echo "travis_fold:start:Run build.sh for ${PLATFORM}"
-
     if [ -e "${PLATFORM_DIR}/build.sh" ]; then
-        echo -e "\e[33;1mRunning .travis/${PLATFORM}/build.sh on ${TRAVIS_REPO_SLUG}\e[0m"
         /bin/bash -ex ${PLATFORM_DIR}/build.sh
     else
         echo 'The specified platform not found: '${PLATFORM} 1>&2
         exit 1
     fi
-
-    echo "travis_fold:end:Run build.sh for ${PLATFORM}"
 fi
 
 if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     echo 'TODO'
 fi
+
+echo "travis_fold:end:run-build.sh for ${PLATFORM}"
