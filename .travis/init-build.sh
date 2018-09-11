@@ -10,6 +10,7 @@ function docker_exec() {
 
 function build_mkldnn() {
     docker_exec "$(cat << EOS
+yum -y install gcc-c++ wget curl make cmake && \
 cd ${TRAVIS_BUILD_DIR} && \
 ([ -d "build" ] || mkdir -p build) && \
 cd ${TRAVIS_BUILD_DIR}/build && \
@@ -25,8 +26,6 @@ cd ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION} && \
 ([ -d "build" ] || mkdir -p build) && cd build && \
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER=${GCC_ROOT_DIR}/bin/gcc \
-  -DCMAKE_CXX_COMPILER=${GCC_ROOT_DIR}/bin/g++ \
   -DCMAKE_INSTALL_PREFIX=${MKLDNN_INSTALL_DIR} \
   -DWITH_TEST=OFF \
   -DWITH_EXAMPLE=OFF \
