@@ -10,14 +10,18 @@ function docker_exec() {
 
 function build_mkldnn() {
     docker_exec "$(cat << EOS
-cd ${HOME}/build && \
+cd ${TRAVIS_BUILD_DIR} && \
+([ -d "build" ] || mkdir -p build) && \
+cd ${TRAVIS_BUILD_DIR}/build && \
+([ -d "downloads" ] || mkdir -p downloads) && \
+cd ${TRAVIS_BUILD_DIR}/build/downloads && \
 wget https://github.com/intel/mkl-dnn/archive/v${MKLDNN_VERSION}.tar.gz && \
-tar -zxf v${MKLDNN_VERSION}.tar.gz
+tar -zxf v${MKLDNN_VERSION}.tar.gz -C ${TRAVIS_BUILD_DIR}/build
 EOS
 )"
-    docker_exec "cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/scripts && ./prepare_mkl.sh"
+    docker_exec "cd ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION}/scripts && ./prepare_mkl.sh"
     docker_exec "$(cat << EOS
-cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION} && \
+cd ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION} && \
 ([ -d "build" ] || mkdir -p build) && cd build && \
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -30,5 +34,5 @@ cmake \
   ..
 EOS
 )"
-    docker_exec "cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/build && timeout 35m make -j$(nproc) && make install/strip"
+    docker_exec "cd ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION}/build && timeout 35m make -j$(nproc) && make install/strip"
 }

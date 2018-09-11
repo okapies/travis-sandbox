@@ -11,14 +11,14 @@ env:
 
 cache:
   directories:
-    - $HOME/downloads
-    - $HOME/protobuf-${PROTOBUF_VERSION}
-    - $HOME/mkl-dnn-${MKLDNN_VERSION}
+    - ${TRAVIS_BUILD_DIR}/build/downloads
+    - ${TRAVIS_BUILD_DIR}/build/protobuf-${PROTOBUF_VERSION}
+    - ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION}
 
 matrix:
   include:
     - os: linux
-      env: PLATFORM_ID=linux-x86_64 BUILDENV_IMAGE=okapies/buildenv:linux-x64-gcc-7.3 GCC_VERSION=7.3.0
+      env: PLATFORM_ID=linux-x86_64 BUILDENV_IMAGE=okapies/buildenv:linux-x64-gcc-5.5 GCC_VERSION=5.5.0
 
 # skip the installation step
 install: true
