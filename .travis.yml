@@ -18,7 +18,7 @@ cache:
 matrix:
   include:
     - os: linux
-      env: PLATFORM_ID=linux-x86_64 BUILDENV_IMAGE=centos:centos7 GCC_VERSION=5.5.0
+      env: PLATFORM_ID=linux-x86_64 BUILDENV_IMAGE=okapies/buildenv:linux-x64-gcc-5.5 GCC_VERSION=5.5.0
 
 # skip the installation step
 install: true
