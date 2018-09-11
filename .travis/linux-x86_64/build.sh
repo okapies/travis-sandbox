@@ -24,7 +24,7 @@ cd menoh && \
 git checkout feature/protobuf-config-options && \
 mkdir -p build && \
 cd build && \
-cmake -DCMAKE_C_COMPILER=${GCC_ROOT_DIR}/bin/gcc -DCMAKE_CXX_COMPILER=${GCC_ROOT_DIR}/bin/g++ -DENABLE_TEST=ON -DLINK_STATIC_LIBPROTOBUF=ON -DLINK_STATIC_LIBSTDCXX=ON -DLINK_STATIC_LIBGCC=ON .. && \
+cmake -DARCH_OPT_FLAGS="" -DCMAKE_C_COMPILER=${GCC_ROOT_DIR}/bin/gcc -DCMAKE_CXX_COMPILER=${GCC_ROOT_DIR}/bin/g++ -DENABLE_TEST=ON -DLINK_STATIC_LIBPROTOBUF=ON -DLINK_STATIC_LIBSTDCXX=ON -DLINK_STATIC_LIBGCC=ON .. && \
 make && \
 ./test/menoh_test
 EOS
