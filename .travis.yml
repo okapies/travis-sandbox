@@ -6,23 +6,63 @@ services:
 
 env:
   global:
-    - PROTOBUF_VERSION: 3.6.1
     - MKLDNN_VERSION: 0.16
     - MAKE_JOBS: -j2
-
-cache:
-  directories:
-    - ${TRAVIS_BUILD_DIR}/build/downloads
-    - ${TRAVIS_BUILD_DIR}/build/protobuf-${PROTOBUF_VERSION}
-    - ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION}
 
 matrix:
   include:
     - os: linux
-      env: PLATFORM=linux-x86_64 BUILDENV_IMAGE=okapies/buildenv:linux-x64-devtoolset-6-base
+      env: BUILDENV_IMAGE="centos:centos6" INSTALL_SCL="true" INSTALL_CMAKE="true" PRIVILEGED=--privileged VOLUMES="-v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro" INIT_CMD="/bin/bash" BUILD_DIR=${TRAVIS_BUILD_DIR}
+    - os: linux
+      env: BUILDENV_IMAGE="okapies/buildenv:linux-x64-devtoolset-6" INSTALL_SCL="true" INSTALL_CMAKE="false" PRIVILEGED=--privileged VOLUMES="-v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro" INIT_CMD="/bin/bash" BUILD_DIR=${TRAVIS_BUILD_DIR}
+    - os: linux
+      env: BUILDENV_IMAGE="okapies/buildenv:linux-x64-gcc-5.5" INSTALL_SCL="true" INSTALL_CMAKE="false" PRIVILEGED=--privileged VOLUMES="-v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro" INIT_CMD="/bin/bash" BUILD_DIR=${TRAVIS_BUILD_DIR}
+    - os: linux
+      env: BUILDENV_IMAGE="okapies/buildenv:linux-x64-devtoolset-6" INSTALL_SCL="true" INSTALL_CMAKE="false" PRIVILEGED=--privileged VOLUMES="-v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro" INIT_CMD="/sbin/init" BUILD_DIR=${TRAVIS_BUILD_DIR}
+    - os: linux
+      env: BUILDENV_IMAGE="centos:centos7" INSTALL_SCL="false" INSTALL_CMAKE="true" PRIVILEGED=--privileged VOLUMES="-v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro" INIT_CMD="/bin/bash" BUILD_DIR=${TRAVIS_BUILD_DIR}
+    - os: linux
+      env: BUILDENV_IMAGE="centos:centos7" INSTALL_SCL="true" INSTALL_CMAKE="true" PRIVILEGED=--privileged VOLUMES="-v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro" INIT_CMD="/bin/bash" BUILD_DIR=${TRAVIS_BUILD_DIR}
 
 # skip the installation step
 install: true
 
+before_script:
+  # run a container
+  - docker pull ${BUILDENV_IMAGE} || true
+  - |
+    if [ "${INIT_CMD}" = "/bin/bash" ]; then
+      export DOCKER_CONTAINER_ID=$(docker run -d -it ${PRIVILEGED} ${VOLUMES} ${BUILDENV_IMAGE} ${INIT_CMD})
+    else
+      export DOCKER_CONTAINER_ID=$(docker run -d ${PRIVILEGED} ${VOLUMES} ${BUILDENV_IMAGE} ${INIT_CMD})
+    fi
+  - docker logs ${DOCKER_CONTAINER_ID}
+  - |
+    function docker_exec() {
+      docker exec -it ${DOCKER_CONTAINER_ID} /bin/bash -xec "$1"
+    }
+
 script:
-  - bash -ex ${TRAVIS_BUILD_DIR}/.travis/run-build.sh
+  # install prerequisits
+  - |
+    if [ "${INSTALL_SCL}" != "true" ]; then
+      docker_exec "yum -y install gcc gcc-c++"
+    else
+      docker_exec "yum -y install centos-release-scl"
+      docker_exec "yum -y install scl-utils"
+      docker_exec "yum -y install devtoolset-6-gcc devtoolset-6-gcc-c++"
+    fi
+  - docker_exec "yum -y install make zip unzip patch perl wget bzip2 curl git"
+  - docker_exec "[ \"${INSTALL_CMAKE}\" = \"true\" ] && yum -y install cmake || true"
+  - docker_exec "[ \"${INSTALL_SCL}\" = \"true\" ] && source scl_source enable devtoolset-6 || true; make --version && cmake --version && g++ --version && ldd --version"
+  # download an archive
+  - docker_exec "cd ${BUILD_DIR} && wget https://github.com/intel/mkl-dnn/archive/v${MKLDNN_VERSION}.tar.gz && tar -zxf v${MKLDNN_VERSION}.tar.gz"
+  # download external libraries
+  - docker_exec "cd ${BUILD_DIR}/mkl-dnn-${MKLDNN_VERSION}/scripts && ./prepare_mkl.sh"
+  # build the source code
+  - docker_exec "[ \"${INSTALL_SCL}\" = \"true\" ] && source scl_source enable devtoolset-6 || true; cd ${BUILD_DIR}/mkl-dnn-${MKLDNN_VERSION} && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DARCH_OPT_FLAGS='' -DWITH_TEST=OFF -DWITH_EXAMPLE=OFF -Wno-error=unused-result .. && time make ${MAKE_JOBS} && make install && ldd /usr/local/lib/libmkldnn.so"
+
+after_script:
+  # stop the container
+  - docker stop ${DOCKER_CONTAINER_ID}
+  - docker rm -v ${DOCKER_CONTAINER_ID}
