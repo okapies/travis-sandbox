@@ -20,13 +20,13 @@ if [[ "$PLATFORM" == "linux-x86" ]] || [[ "$PLATFORM" == "linux-x86_64" ]] || [[
     #               /home/travis/build/<user>/<repo> : /home/travis/build/<user>/<repo>
     export DOCKER_CONTAINER_ID=$(docker run --privileged -d -v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro ${BUILDENV_IMAGE} /sbin/init)
 
+    # Stop the container when run-build.sh exits
+    trap '[[ "$DOCKER_CONTAINER_ID" ]] && docker stop ${DOCKER_CONTAINER_ID} && docker rm -v ${DOCKER_CONTAINER_ID}' 0 1 2 3 15
+
     if [ -z "${DOCKER_CONTAINER_ID}" ]; then
         echo 'Failed to run a Docker container: '${BUILDENV_IMAGE}
         exit 1
     fi
-
-    # Stop the container when run-build.sh exits
-    trap '[[ "$DOCKER_CONTAINER_ID" ]] && docker stop ${DOCKER_CONTAINER_ID} && docker rm -v ${DOCKER_CONTAINER_ID}' 0 1 2 3 15
 
     if [ -e "${PLATFORM_DIR}/build.sh" ]; then
         /bin/bash -ex ${PLATFORM_DIR}/build.sh
