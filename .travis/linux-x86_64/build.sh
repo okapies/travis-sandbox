@@ -18,9 +18,9 @@ docker_exec "make --version && cmake --version && g++ --version && ldd --version
 
 docker_exec "$(cat << EOS
 yum -y install opencv-devel && \
+cd /usr/local/src
 git clone https://github.com/pfnet-research/menoh.git && \
 cd menoh && \
-git checkout feature/protobuf-config-options && \
 mkdir -p build && \
 cd build && \
 cmake -DARCH_OPT_FLAGS="" -DENABLE_TEST=ON -DLINK_STATIC_LIBPROTOBUF=ON -DLINK_STATIC_LIBSTDCXX=ON -DLINK_STATIC_LIBGCC=ON .. && \
