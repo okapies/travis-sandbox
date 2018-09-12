@@ -19,7 +19,7 @@ cache:
 matrix:
   include:
     - os: linux
-      env: PLATFORM=linux-x86_64 BUILDENV_IMAGE=okapies/buildenv:linux-x64-devtoolset-6
+      env: PLATFORM=linux-x86_64 BUILDENV_IMAGE=okapies/buildenv:linux-x64-devtoolset-6-base
 
 # skip the installation step
 install: true

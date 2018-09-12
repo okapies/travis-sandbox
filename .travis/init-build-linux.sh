@@ -20,6 +20,7 @@ EOS
 )"
     docker_exec "cd ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION}/scripts && ./prepare_mkl.sh"
     docker_exec "$(cat << EOS
+yum -y install cmake && \
 cd ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION} && \
 ([ -d "build" ] || mkdir -p build) && cd build && \
 cmake \
