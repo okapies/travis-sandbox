@@ -18,11 +18,15 @@ if [[ "$PLATFORM" == "linux-x86" ]] || [[ "$PLATFORM" == "linux-x86_64" ]] || [[
     # $HOME:$HOME = /home/travis                     : /home/travis
     #               /home/travis/build               : /home/travis/build
     #               /home/travis/build/<user>/<repo> : /home/travis/build/<user>/<repo>
-#    export DOCKER_CONTAINER_ID=$(docker run --privileged -d -v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro ${BUILDENV_IMAGE} /sbin/init)
-    export DOCKER_CONTAINER_ID=$(docker run -d -v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro ${BUILDENV_IMAGE} /sbin/init)
+    export DOCKER_CONTAINER_ID=$(docker run -d -it -v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro ${BUILDENV_IMAGE} /bin/bash)
+
+    # Note: You shouldn't do `docker run` with `--privileged /sbin/init`.
+    # See https://bugzilla.redhat.com/show_bug.cgi?id=1046469 for the details.
 
     # Stop the container when run-build.sh exits
     trap '[[ "$DOCKER_CONTAINER_ID" ]] && docker stop ${DOCKER_CONTAINER_ID} && docker rm -v ${DOCKER_CONTAINER_ID}' 0 1 2 3 15
+
+    docker logs ${DOCKER_CONTAINER_ID}
 
     if [ -z "${DOCKER_CONTAINER_ID}" ]; then
         echo 'Failed to run a Docker container: '${BUILDENV_IMAGE}

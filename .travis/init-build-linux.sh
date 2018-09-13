@@ -28,9 +28,24 @@ cmake \
   -DCMAKE_INSTALL_PREFIX=${MKLDNN_INSTALL_DIR} \
   -DWITH_TEST=OFF \
   -DWITH_EXAMPLE=OFF \
+  -DARCH_OPT_FLAGS='' \
   -Wno-error=unused-result \
   ..
 EOS
 )"
     docker_exec "cd ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION}/build && make ${MAKE_JOBS} && make install/strip"
+}
+
+function build_menoh() {
+    docker_exec "$(cat << EOS
+cd ${TRAVIS_BUILD_DIR} && \
+git clone https://github.com/pfnet-research/menoh.git && \
+cd menoh && \
+mkdir -p build && \
+cd build && \
+cmake -DLINK_STATIC_LIBPROTOBUF=ON -DLINK_STATIC_LIBSTDCXX=ON -DLINK_STATIC_LIBGCC=ON -DENABLE_TEST=ON .. && \
+make && \
+./test/menoh_test
+EOS
+)"
 }
