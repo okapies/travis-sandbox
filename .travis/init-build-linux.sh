@@ -20,35 +20,42 @@ function build_and_install_protobuf() {
     local download_url="https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-cpp-${PROTOBUF_VERSION}.tar.gz"
     # download (if it isn't cached)
     docker_exec "$(cat << EOS
-        cd ${DOWNLOAD_DIR} && \
-        ([ -e "protobuf-cpp-${PROTOBUF_VERSION}.tar.gz" ] || wget ${download_url}) && \
-        tar -zxf protobuf-cpp-${PROTOBUF_VERSION}.tar.gz -C ${HOME}/build
+        if [ ! -e "${HOME}/build/protobuf-${PROTOBUF_VERSION}/LICENSE" ]; then
+            cd ${DOWNLOAD_DIR} && \
+            ([ -e "protobuf-cpp-${PROTOBUF_VERSION}.tar.gz" ] || wget ${download_url}) && \
+            tar -zxf protobuf-cpp-${PROTOBUF_VERSION}.tar.gz -C ${HOME}/build
+        fi
 EOS
 )"
     # build (if it isn't cached)
     docker_exec "$(cat << EOS
-        [ -e "${HOME}/build/protobuf-${PROTOBUF_VERSION}/src/libprotobuf.so" ] || \
+        if [ ! -e "${HOME}/build/protobuf-${PROTOBUF_VERSION}/src/libprotobuf.so" ]; then
             cd ${HOME}/build/protobuf-${PROTOBUF_VERSION} && \
             ./configure --prefix=${PROTOBUF_INSTALL_DIR} CFLAGS=-fPIC CXXFLAGS=-fPIC && \
             make ${MAKE_JOBS}
+        else
+            echo 'libprotobuf is already built.'
+        fi
 EOS
 )"
     # install (always)
-    docker_exec "cd ${HOME}/build/protobuf-${PROTOBUF_VERSION} && make install"
+    docker_exec "echo -e \"\e[33;1mInstalling libprotobuf\e[0m\" && cd ${HOME}/build/protobuf-${PROTOBUF_VERSION} && make install"
 }
 
 function build_and_install_mkldnn() {
     local download_url="https://github.com/intel/mkl-dnn/archive/v${MKLDNN_VERSION}.tar.gz"
     # download (if it isn't cached)
     docker_exec "$(cat << EOS
-        cd ${DOWNLOAD_DIR} && \
-        ([ -e "mkl-dnn-${MKLDNN_VERSION}.tar.gz" ] || wget -O mkl-dnn-${MKLDNN_VERSION}.tar.gz ${download_url}) && \
-        tar -zxf mkl-dnn-${MKLDNN_VERSION}.tar.gz -C ${HOME}/build
+        if [ ! -e "${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/LICENSE" ]; then
+            cd ${DOWNLOAD_DIR} && \
+            ([ -e "mkl-dnn-${MKLDNN_VERSION}.tar.gz" ] || wget -O mkl-dnn-${MKLDNN_VERSION}.tar.gz ${download_url}) && \
+            tar -zxf mkl-dnn-${MKLDNN_VERSION}.tar.gz -C ${HOME}/build
+        fi
 EOS
 )"
     # build (if it isn't cached)
     docker_exec "$(cat << EOS
-        [ -e "${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/build/src/libmkldnn.so" ] || \
+        if [ ! -e "${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/build/src/libmkldnn.so" ]; then
             cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/scripts && \
             ./prepare_mkl.sh && \
             cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION} && \
@@ -62,10 +69,13 @@ EOS
                 -Wno-error=unused-result \
                 .. && \
             make ${MAKE_JOBS}
+        else
+            echo 'libmkldnn is already built.'
+        fi
 EOS
 )"
     # install (always)
-    docker_exec "cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/build && make install/strip"
+    docker_exec "echo -e \"\e[33;1mInstalling libmkldnn\e[0m\" && cd ${HOME}/build/mkl-dnn-${MKLDNN_VERSION}/build && make install/strip"
 }
 
 function prepare_menoh_data() {
@@ -82,6 +92,18 @@ EOS
 }
 
 function build_menoh() {
+    docker_exec "$(cat << EOS
+        cd ${TRAVIS_BUILD_DIR} && \
+        cd menoh && \
+        mkdir -p build && \
+        cd build && \
+        cmake -DENABLE_TEST=ON .. && \
+        make && \
+        ./test/menoh_test
+EOS
+)"
+}
+function build_menoh_static() {
     docker_exec "$(cat << EOS
         cd ${TRAVIS_BUILD_DIR} && \
         cd menoh && \

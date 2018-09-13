@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "travis_fold:start:run-build.sh for ${PLATFORM}"
+echo "travis_fold:start:run-build.sh"
 echo -e "\e[33;1mRunning .travis/${PLATFORM}/run-build.sh on ${TRAVIS_REPO_SLUG}\e[0m"
 
 # check if variables have values
@@ -46,4 +46,4 @@ if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     echo 'TODO'
 fi
 
-echo "travis_fold:end:run-build.sh for ${PLATFORM}"
+echo "travis_fold:end:run-build.sh"
