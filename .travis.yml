@@ -12,9 +12,9 @@ env:
 
 cache:
   directories:
-    - ${TRAVIS_BUILD_DIR}/build/downloads
-    - ${TRAVIS_BUILD_DIR}/build/protobuf-${PROTOBUF_VERSION}
-    - ${TRAVIS_BUILD_DIR}/build/mkl-dnn-${MKLDNN_VERSION}
+    - ${HOME}/downloads
+    - ${HOME}/build/protobuf-${PROTOBUF_VERSION}
+    - ${HOME}/build/mkl-dnn-${MKLDNN_VERSION}
 
 matrix:
   include:
