@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "travis_fold:start:run-build.sh"
-echo -e "\e[33;1mRunning .travis/${PLATFORM}/run-build.sh on ${TRAVIS_REPO_SLUG}\e[0m"
+echo -e "\e[33;1mRunning .travis/${PLATFORM}/run-build.sh in ${TRAVIS_REPO_SLUG}\e[0m"
 
 # check if variables have values
 test -n "${PLATFORM}" || { echo "PLATFORM does not exist"; exit 1; }
@@ -18,6 +18,7 @@ if [[ "$PLATFORM" == "linux-x86" ]] || [[ "$PLATFORM" == "linux-x86_64" ]] || [[
     # $HOME:$HOME = /home/travis                     : /home/travis
     #               /home/travis/build               : /home/travis/build
     #               /home/travis/build/<user>/<repo> : /home/travis/build/<user>/<repo> (= ${TRAVIS_BUILD_DIR})
+    # TODO: the ownership of files and directories mounted on the container
     export DOCKER_CONTAINER_ID=$(docker run -d -it -v $HOME:$HOME -v /sys/fs/cgroup:/sys/fs/cgroup:ro ${BUILDENV_IMAGE} /bin/bash)
 
     # Note: You shouldn't do `docker run` with `--privileged /sbin/init`.

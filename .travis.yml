@@ -8,7 +8,7 @@ env:
   global:
     - PROTOBUF_VERSION: 3.6.1
     - MKLDNN_VERSION: 0.16
-    - MAKE_JOBS: -j2
+    - MAKE_JOBS: 2
 
 cache:
   directories:
